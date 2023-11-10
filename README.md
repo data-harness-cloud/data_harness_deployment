@@ -61,7 +61,7 @@ docker compose up -d data_harness_mysql data_harness_redis data_harness_minio
 
 ### :five: : 构建并运行 `Data Harness`
 
-在运行 Data Harness 之前，你要开放 8081 和 8082 端口。
+在运行 Data Harness 之前，你要开放 8081 端口。
 
  ```shell
  docker compose build --no-cache data_harness_be data_harness_fe
