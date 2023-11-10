@@ -1,0 +1,179 @@
+version: '3'
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "20m"
+    max-file: "15"
+
+networks:
+  data_harness:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.6.6.0/24
+
+services:
+  data_harness_mysql:
+    build:
+      context: ./data_harness_mysql/
+      dockerfile: Dockerfile
+    image: supiedt/data_harness_mysql:${DATA_HARNESS_VERSION:-v1.0.0}
+    container_name: data_harness_mysql
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - MYSQL_ROOT_PASSWORD=${DATA_HARNESS_MYSQL_ROOT_PASSWORD:-QqkoeLs0zPvOOroVkJCsLCWx}
+      - MYSQL_USER=${DATA_HARNESS_MYSQL_USER:-supiedt}
+      - MYSQL_PASSWORD=${DATA_HARNESS_MYSQL_PASSWORD:-supiedt666}
+      - MYSQL_DATABASE=${DATA_HARNESS_MYSQL_DATABASE:-data_harness}
+    volumes:
+      # - ./data_harness_mysql/data:/var/lib/mysql
+      - data_harness_mysql:/var/lib/mysql
+    ports:
+      - "${DATA_HARNESS_MYSQL_PORT:-8083}:8083"
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+    networks:
+      data_harness:
+        ipv4_address: 172.6.6.2
+    
+  data_harness_redis:
+    build:
+      context: ./data_harness_redis/
+      dockerfile: Dockerfile
+    image: supiedt/data_harness_redis:${DATA_HARNESS_VERSION:-v1.0.0}
+    container_name: data_harness_redis
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - REDIS_PASSWORD=${DATA_HARNESS_REDIS_PASSWORD:-supiedt666}
+    volumes:
+      # - ./data_harness_redis/data:/data
+      - data_harness_redis:/data
+    ports:
+      - "${DATA_HARNESS_REDIS_PORT:-8084}:8084"
+    command: redis-server --port 8084 --appendonly yes --requirepass ${REDIS_PASSWORD}
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+    networks:
+      data_harness:
+        ipv4_address: 172.6.6.3
+    
+  data_harness_minio:
+    build:
+      context: ./data_harness_minio/
+      dockerfile: Dockerfile
+    image: supiedt/data_harness_minio:${DATA_HARNESS_VERSION:-v1.0.0}
+    container_name: data_harness_minio
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - MINIO_ACCESS_KEY=${DATA_HARNESS_MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${DATA_HARNESS_MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      # - ./data_harness_minio/data:/data
+      - data_harness_minio:/data
+    ports:
+      - "${DATA_HARNESS_MINIO_PORT:-8085}:8085"
+      - "${DATA_HARNESS_MINIO_WEB_PORT:-8086}:8086"
+    command: server /data --console-address ":8085" --address ":8086"
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/minio/health/live"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+    networks:
+      data_harness:
+        ipv4_address: 172.6.6.4
+    
+  data_harness_be:
+    build:
+      context: ./data_harness_be/
+      dockerfile: Dockerfile
+    image: supiedt/data_harness_be:${DATA_HARNESS_VERSION:-v1.0.0}
+    container_name: data_harness_be
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      # data_harness_mysql
+      - DATA_HARNESS_MYSQL_HOST=${DATA_HARNESS_MYSQL_HOST:-172.6.6.2}
+      - DATA_HARNESS_MYSQL_PORT=${DATA_HARNESS_MYSQL_PORT:-8083}
+      - DATA_HARNESS_MYSQL_USER=${DATA_HARNESS_MYSQL_USER:-supiedt}
+      - DATA_HARNESS_MYSQL_PASSWORD=${DATA_HARNESS_MYSQL_PASSWORD:-supiedt666}
+      - DATA_HARNESS_MYSQL_DATABASE=${DATA_HARNESS_MYSQL_DATABASE:-data_harness}
+      # data_harness_redis
+      - DATA_HARNESS_REDIS_HOST=${DATA_HARNESS_REDIS_HOST:-172.6.6.3}
+      - DATA_HARNESS_REDIS_PORT=${DATA_HARNESS_REDIS_PORT:-8084}
+      - DATA_HARNESS_REDIS_PASSWORD=${DATA_HARNESS_REDIS_PASSWORD:-supiedt666}
+      # data_harness_minio
+      - DATA_HARNESS_MINIO_URL=${DATA_HARNESS_MINIO_HOST:-http://172.6.6.4:8085}
+      - DATA_HARNESS_MINIO_ACCESS_KEY=${DATA_HARNESS_MINIO_ACCESS_KEY:-minioadmin}
+      - DATA_HARNESS_MINIO_SECRET_KEY=${DATA_HARNESS_MINIO_SECRET_KEY:-minioadmin}
+      - DATA_HARNESS_MINIO_BUCKET=${DATA_HARNESS_MINIO_BUCKET:-data_harness}
+    volumes:
+      # - ./data_harness_be/app:/app
+      - data_harness_be:/app
+    ports:
+      - "8082:8082"
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      data_harness_mysql:
+        condition: service_healthy
+      data_harness_redis:
+        condition: service_healthy
+      data_harness_minio:
+        condition: service_healthy
+    networks:
+      data_harness:
+        ipv4_address: 172.6.6.5
+  
+  data_harness_fe:
+    build:
+      context: ./data_harness_fe/
+      dockerfile: Dockerfile
+    image: supiedt/data_harness_fe:${DATA_HARNESS_VERSION:-v1.0.0}
+    container_name: data_harness_fe
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - DATA_HARNESS_API_URL=${DATA_HARNESS_EXTERNAL_API:-data_harness_be:8082}
+    volumes:
+      # - ./data_harness_fe/html:/usr/share/nginx/html
+      - data_harness_fe:/usr/share/nginx/html
+    ports:
+      - "8081:8081"
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      data_harness_be:
+        condition: service_healthy
+    networks:
+      data_harness:
+        ipv4_address: 172.6.6.6
+
+volumes:
+  data_harness_mysql:
+  data_harness_redis:
+  data_harness_minio:
+  data_harness_be:
+  data_harness_fe:

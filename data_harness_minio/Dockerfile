@@ -1,0 +1,1 @@
+FROM reg.aidb.site/library/minio

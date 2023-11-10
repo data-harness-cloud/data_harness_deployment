@@ -1,0 +1,40 @@
+worker_processes  auto;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+
+    keepalive_timeout  65;
+
+    upstream backend {
+        server  ${DATA_HARNESS_API_URL};
+    }
+    server {
+        listen       8081;
+
+        underscores_in_headers on;
+
+        location / {
+            root	/usr/share/nginx/html;
+            index 	index.html index.htm;
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /api {
+             proxy_pass	http://backend/;
+             proxy_redirect  default;
+             proxy_set_header Host $proxy_host;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root	/usr/share/nginx/html;
+        }
+    }
+}
