@@ -69,7 +69,7 @@ docker compose up -d data_harness_mysql data_harness_redis data_harness_minio
  docker compose up -d
  ```
  执行完成后，等待 一分钟 左右就可以访问了 访问用户名/密码为：`admin/supiedt666`
- 访问地址为 .env 文件内 DATA_HARNESS_FE_EXTERNAL_URL 的参数，如 http/https://localhost:8081
+ 访问地址为 .env 文件内 DATA_HARNESS_FE_EXTERNAL_URL 的参数，如 http://localhost:8081
 
 
 
@@ -79,10 +79,10 @@ docker compose up -d data_harness_mysql data_harness_redis data_harness_minio
  在 第二步 修改 .env 文件后 直接运行 `docker compose up -d`, 会从 hub.docker.com 拉取镜像。
  或者你的环境中已经有 Data Harness 运行所需依赖(mysql、redis、minio)的话，mysql 创建 `data_harness` 库后，导入 `data_harness_mysql/initial.sql` 文件， 编辑 .env 文件后 选择 自行编译镜像或者使用我们提供的镜像依你而定
 
+## 卸载
 
- ## 卸载
 ```shell
 docker compose down
-docker rmi docker rmi supiedt/data_harness_be:v1.0.0 supiedt/data_harness_fe:v1.0.0 supiedt/data_harness_minio:v1.0.0 supiedt/data_harness_mysql:v1.0.0 supiedt/data_harness_redis:v1.0.0
+docker rmi supiedt/data_harness_be:v1.0.0 supiedt/data_harness_fe:v1.0.0 supiedt/data_harness_minio:v1.0.0 supiedt/data_harness_mysql:v1.0.0 supiedt/data_harness_redis:v1.0.0
 docker volume rm data_harness_deployment_data_harness_be data_harness_deployment_data_harness_fe data_harness_deployment_data_harness_minio data_harness_deployment_data_harness_mysql data_harness_deployment_data_harness_redis
 ```
