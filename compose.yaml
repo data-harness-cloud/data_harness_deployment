@@ -5,6 +5,7 @@ x-logging: &default-logging
   options:
     max-size: "20m"
     max-file: "15"
+    log_path: "./logs"
 
 networks:
   data_harness:
