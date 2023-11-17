@@ -2,7 +2,7 @@
 
 ## 背景
 
-此项目提供 `docker compose` 一键部署运行 `Data Harness (驭数轻云数据中台)`。提供以下软件环境：
+此项目目前提供 `docker compose` 部署运行 `Data Harness (驭数轻云数据中台)`。提供以下软件环境：
 
 - Data Harness v1.0.0
 - MySQL 8.0.34
@@ -11,6 +11,7 @@
 
 ## 注意
 
+团队正在火热开发中，若有发现错误，敬请 Issues 讨论 或 提交 PR   :hugging_face:
 
 
 ## 快速上手
@@ -48,7 +49,7 @@ docker compose build --no-cache data_harness_mysql data_harness_redis data_harne
 docker compose up -d data_harness_mysql data_harness_redis data_harness_minio
 ```
 
- 等待片刻后需要手动初始化数据库( ** 初始化数据库只再第一次构建运行，系统启动成功后 == 禁止再次执行初始化操作 == ** )
+ 等待片刻后需要手动初始化数据库( **初始化数据库只再第一次构建运行，系统启动成功后 ==禁止再次执行初始化操作== ** )
 
  ```shell
  # 查看 MySQL 是否启动
@@ -61,7 +62,7 @@ docker compose up -d data_harness_mysql data_harness_redis data_harness_minio
 
 ### :five: : 构建并运行 `Data Harness`
 
-在运行 Data Harness 之前，你要开放 8081 端口。
+在运行 Data Harness 之前，你需要开放 `8081` 端口。
 
  ```shell
  docker compose build --no-cache data_harness_be data_harness_fe
@@ -84,3 +85,8 @@ docker rmi supiedt/data_harness_be:v1.0.0 supiedt/data_harness_fe:v1.0.0 supiedt
 docker volume rm data_harness_deployment_data_harness_be data_harness_deployment_data_harness_fe data_harness_deployment_data_harness_minio data_harness_deployment_data_harness_mysql data_harness_deployment_data_harness_redis
 rm -rf ./*
 ```
+
+## 技术栈
+| 模块   | 组件         | 版本  | 计划              |
+|------|------------|-----|-----------------|
+| 部署   | Docker/ Docker Compose     | --  | K8S/Helm             |
