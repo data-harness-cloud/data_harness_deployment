@@ -60,6 +60,13 @@ docker compose up -d data_harness_mysql data_harness_redis data_harness_minio
  docker compose exec -i data_harness_mysql mysql -u supiedt -psupiedt666 data_harness < data_harness_mysql/initial.sql
  ```
 
+> **注意** ：由于存在数据库数据差异，需要手动添加新的数据库，数据库后面更新的 sql 文件在 data_harness_mysql 下
+>
+> 例如 
+> `docker compose exec -i data_harness_mysql mysql -u supiedt -psupiedt666 data_harness < data_harness_mysql/sdt_customize_route.sql`
+> 
+
+
 ### :five: : 构建并运行 `Data Harness`
 
 在运行 Data Harness 之前，你需要开放 `8081` 端口。
