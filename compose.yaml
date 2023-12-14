@@ -154,6 +154,7 @@ services:
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - DATA_HARNESS_API_URL=${DATA_HARNESS_EXTERNAL_API:-data_harness_be:8082}
+      - DATA_HARNESS_OPENAI_URL=${DATA_HARNESS_OPENAI_URL:-https://api.openai.com/v1}
     volumes:
       # - ./data_harness_fe/html:/usr/share/nginx/html
       - data_harness_fe:/usr/share/nginx/html
