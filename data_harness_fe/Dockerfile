@@ -1,6 +1,6 @@
 FROM reg.aidb.site/library/node:18.18.2-dev as builder
 WORKDIR /app
-RUN git clone https://gitee.com/data_harness_cloud/data_harness-fe.git .
+RUN git clone https://github.com/data-harness-cloud/data_harness-fe.git .
 RUN npm config set registry https://registry.npm.taobao.org 
 RUN npm install
 RUN npm run build:prod
