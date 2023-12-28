@@ -1,6 +1,6 @@
 FROM reg.aidb.site/library/maven as builder
 WORKDIR /app
-RUN git clone https://github.com/data-harness-cloud/data_harness-be.git .
+RUN git clone https://gitee.com/data_harness_cloud/data_harness-be.git .
 RUN mvn clean 
 RUN mvn install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
 
